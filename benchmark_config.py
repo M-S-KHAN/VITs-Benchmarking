@@ -12,16 +12,16 @@ class BenchmarkConfig:
             "base": "facebook/detr-resnet-50",
             "large": "facebook/detr-resnet-101",
         },
-        "Mask2Former": {
-            "base": "facebook/mask2former-swin-base-coco-instance",
-            "large": "facebook/mask2former-swin-large-coco-instance",
-        },
-        "YOLOF": {
-            "base": "chenhaojie/yolof-r50-c5-1x",
-        },
-        "ConditionalDETR": {
-            "base": "microsoft/conditional-detr-resnet-50",
-        }
+        # "Mask2Former": {
+        #     "base": "facebook/mask2former-swin-base-coco-instance",
+        #     "large": "facebook/mask2former-swin-large-coco-instance",
+        # },
+        # "YOLOF": {
+        #     "base": "chenhaojie/yolof-r50-c5-1x",
+        # },
+        # "ConditionalDETR": {
+        #     "base": "microsoft/conditional-detr-resnet-50",
+        # }
     }
 
     # Depth Estimation Models
@@ -46,17 +46,8 @@ class BenchmarkConfig:
     }
 
     # Metrics
-    OBJECT_DETECTION_METRICS = [
-        "mAP",
-        "mAP_50",
-        "mAP_75",
-        "mAP_small",
-        "mAP_medium",
-        "mAP_large",
-        "average_precision",
-        "average_recall",
-        "inference_time"
-    ]
+    OBJECT_DETECTION_METRICS = ["mean_iou", "inference_time"]
+    COMPARISON_METRICS = ["mean_iou", "inference_time"]
 
     DEPTH_ESTIMATION_METRICS = [
         "RMSE",
@@ -88,12 +79,12 @@ class BenchmarkConfig:
         "box_plot"
     ]
 
-    COMPARISON_METRICS = [
-        "mAP",
-        "inference_time",
-        "RMSE",
-        "MAE"
-    ]
+    # COMPARISON_METRICS = [
+    #     "mAP",
+    #     "inference_time",
+    #     "RMSE",
+    #     "MAE"
+    # ]
 
     # Color settings for visualizations
     COLORS = {

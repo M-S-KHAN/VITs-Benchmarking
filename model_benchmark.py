@@ -12,143 +12,168 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
+from torchmetrics.segmentation import MeanIoU
+import torch
+from torchvision.ops import box_iou, generalized_box_iou
+from scipy.optimize import linear_sum_assignment
+import numpy as np
+from tqdm import tqdm
+from PIL import Image
+import time
 
 
 class ModelBenchmark:
-    def __init__(self):
-        self.config = BenchmarkConfig()
-        self.device = torch.device(
-            self.config.DEVICE if torch.cuda.is_available() else "cpu"
-        )
+    def __init__(self, config):
+        self.config = config
+        self.device = torch.device(self.config.DEVICE if torch.cuda.is_available() else "cpu")
 
-    def run_inference(self, feature_extractor, model, image):
-        inputs = feature_extractor(images=image, return_tensors="pt").to(self.device)
+    def benchmark_model(self, model_type, model_name, variant, dataset):
+        feature_extractor, model = self.config.load_model(model_type, model_name, variant)
         model.to(self.device)
-
-        with torch.no_grad():
-            start_time = time.time()
-            outputs = model(**inputs)
-            end_time = time.time()
-
-        inference_time = end_time - start_time
-        return outputs, inference_time
-
-    def benchmark_model(self, model_type, model_name, variant, image_paths):
-        feature_extractor, model = self.config.load_model(
-            model_type, model_name, variant
-        )
         results = []
 
-        for image_path in image_paths:
+        for image_path, ground_truth in tqdm(dataset, desc=f"Benchmarking {model_name} - {variant}"):
             image = Image.open(image_path).convert("RGB")
-            outputs, inference_time = self.run_inference(
-                feature_extractor, model, image
-            )
-
-            result = {
+            inputs = feature_extractor(images=image, return_tensors="pt").to(self.device)
+            
+            with torch.no_grad():
+                start_time = time.time()
+                outputs = model(**inputs)
+                end_time = time.time()
+            
+            inference_time = end_time - start_time
+            
+            # Process predictions
+            pred_boxes = outputs.pred_boxes[0].cpu()
+            pred_scores = outputs.logits[0].softmax(-1).max(-1).values.cpu()
+            
+            # Filter predictions based on confidence threshold
+            keep = pred_scores > self.config.CONFIDENCE_THRESHOLD
+            pred_boxes = pred_boxes[keep]
+            pred_scores = pred_scores[keep]
+            
+            results.append({
                 "image_path": image_path,
-                "outputs": outputs,
-                "inference_time": inference_time,
-            }
-            results.append(result)
+                "pred_boxes": pred_boxes,
+                "pred_scores": pred_scores,
+                "ground_truth": ground_truth,
+                "inference_time": inference_time
+            })
 
         return results
 
-    def calculate_metrics(self, results, ground_truth, model_type):
-        if model_type == "object_detection":
-            return self.calculate_object_detection_metrics(results, ground_truth)
-        elif model_type == "depth_estimation":
-            return self.calculate_depth_estimation_metrics(results, ground_truth)
-        else:
-            raise ValueError(f"Unknown model type: {model_type}")
-
-    def calculate_object_detection_metrics(self, results, ground_truth):
-        metric = MeanAveragePrecision(box_format="xywh", iou_type="bbox")
-
-        for result, gt in zip(results, ground_truth):
-            preds = [
-                {
-                    "boxes": result["outputs"]["pred_boxes"],
-                    "scores": result["outputs"]["pred_scores"],
-                    "labels": result["outputs"]["pred_labels"],
-                }
-            ]
-
-            target = [
-                {
-                    "boxes": torch.tensor([ann["bbox"] for ann in gt]),
-                    "labels": torch.tensor([ann["category_id"] for ann in gt]),
-                }
-            ]
-
-            metric.update(preds, target)
-
-        metrics = metric.compute()
-
-        return {
-            "mAP": metrics["map"].item(),
-            "mAP_50": metrics["map_50"].item(),
-            "mAP_75": metrics["map_75"].item(),
-            "mAP_small": metrics["map_small"].item(),
-            "mAP_medium": metrics["map_medium"].item(),
-            "mAP_large": metrics["map_large"].item(),
-            "average_precision": metrics["map_per_class"].mean().item(),
-            "average_recall": metrics["mar_100"].item(),
-            "inference_time": np.mean([r["inference_time"] for r in results]),
+    def calculate_metrics(self, results):
+        metrics = {
+            "mean_iou": [],
+            "mean_giou": [],
+            "ap_50": [],
+            "ap_75": [],
+            "inference_time": []
         }
 
-    def calculate_depth_estimation_metrics(self, results, ground_truth):
-        rmse_list, mae_list, ssim_list = [], [], []
-        delta1_list, delta2_list, delta3_list = [], [], []
+        for result in results:
+            pred_boxes = result["pred_boxes"]
+            gt_boxes = torch.tensor(result["ground_truth"]["boxes"])
+            
+            if len(pred_boxes) > 0 and len(gt_boxes) > 0:
+                # Calculate IoU and GIoU
+                iou = box_iou(pred_boxes, gt_boxes)
+                giou = generalized_box_iou(pred_boxes, gt_boxes)
+                
+                # Assign predictions to ground truth boxes
+                cost_matrix = -iou.numpy()
+                pred_indices, gt_indices = linear_sum_assignment(cost_matrix)
+                
+                # Calculate metrics
+                metrics["mean_iou"].append(iou[pred_indices, gt_indices].mean().item())
+                metrics["mean_giou"].append(giou[pred_indices, gt_indices].mean().item())
+                metrics["ap_50"].append((iou[pred_indices, gt_indices] > 0.5).float().mean().item())
+                metrics["ap_75"].append((iou[pred_indices, gt_indices] > 0.75).float().mean().item())
+            
+            metrics["inference_time"].append(result["inference_time"])
 
-        ssim_metric = StructuralSimilarityIndexMeasure(data_range=1.0)
+        # Calculate average metrics
+        for key in metrics:
+            metrics[key] = np.mean(metrics[key])
 
-        for result, gt in zip(results, ground_truth):
-            pred_depth = result["outputs"]["predicted_depth"].squeeze().cpu().numpy()
-            true_depth = gt["depth"].squeeze().cpu().numpy()
+        return metrics
 
-            # Normalize depths
-            pred_depth = (pred_depth - pred_depth.min()) / (
-                pred_depth.max() - pred_depth.min()
-            )
-            true_depth = (true_depth - true_depth.min()) / (
-                true_depth.max() - true_depth.min()
-            )
+    def run_benchmark(self, dataset, num_runs=5):
+        all_results = {}
 
-            # RMSE
-            rmse = np.sqrt(mean_squared_error(true_depth, pred_depth))
-            rmse_list.append(rmse)
+        for model_type in ["object_detection", "depth_estimation"]:
+            models = (self.config.OBJECT_DETECTION_MODELS if model_type == "object_detection" 
+                      else self.config.DEPTH_ESTIMATION_MODELS)
+            
+            for model_name, variants in models.items():
+                model_results = {}
+                for variant in variants:
+                    variant_results = []
+                    for _ in range(num_runs):
+                        results = self.benchmark_model(model_type, model_name, variant, dataset)
+                        metrics = self.calculate_metrics(results)
+                        variant_results.append(metrics)
+                    
+                    # Calculate average and standard deviation of metrics
+                    avg_metrics = {k: np.mean([r[k] for r in variant_results]) for k in variant_results[0]}
+                    std_metrics = {k: np.std([r[k] for r in variant_results]) for k in variant_results[0]}
+                    
+                    model_results[variant] = {
+                        "avg_metrics": avg_metrics,
+                        "std_metrics": std_metrics
+                    }
+                
+                all_results[f"{model_name}"] = model_results
 
-            # MAE
-            mae = mean_absolute_error(true_depth, pred_depth)
-            mae_list.append(mae)
+        return all_results
 
-            # SSIM
-            ssim = ssim_metric(
-                torch.from_numpy(pred_depth).unsqueeze(0).unsqueeze(0),
-                torch.from_numpy(true_depth).unsqueeze(0).unsqueeze(0),
-            )
-            ssim_list.append(ssim.item())
+    def analyze_dataset_impact(self, all_results, dataset):
+        impact_analysis = {}
+        
+        # Analyze dataset characteristics
+        image_sizes = [Image.open(item[0]).size for item in dataset]
+        avg_image_size = np.mean(image_sizes, axis=0)
+        
+        object_densities = [len(item[1]['boxes']) / (size[0] * size[1]) for item, size in zip(dataset, image_sizes)]
+        avg_object_density = np.mean(object_densities)
+        
+        for model_name, model_results in all_results.items():
+            impact_analysis[model_name] = {
+                "performance_vs_image_size": self._correlation(model_results, "mean_iou", image_sizes),
+                "performance_vs_object_density": self._correlation(model_results, "mean_iou", object_densities)
+            }
+        
+        return impact_analysis, {"avg_image_size": avg_image_size, "avg_object_density": avg_object_density}
 
-            # Delta metrics
-            thresh = np.maximum((true_depth / pred_depth), (pred_depth / true_depth))
-            delta1 = (thresh < 1.25).mean()
-            delta2 = (thresh < 1.25**2).mean()
-            delta3 = (thresh < 1.25**3).mean()
+    def _correlation(self, model_results, metric, dataset_property):
+        # Calculate correlation between model performance and dataset property
+        performance = [variant["avg_metrics"][metric] for variant in model_results.values()]
+        return np.corrcoef(performance, dataset_property)[0, 1]
 
-            delta1_list.append(delta1)
-            delta2_list.append(delta2)
-            delta3_list.append(delta3)
-
-        return {
-            "RMSE": np.mean(rmse_list),
-            "MAE": np.mean(mae_list),
-            "SSIM": np.mean(ssim_list),
-            "delta1": np.mean(delta1_list),
-            "delta2": np.mean(delta2_list),
-            "delta3": np.mean(delta3_list),
-            "inference_time": np.mean([r["inference_time"] for r in results]),
-        }
+    def report_results(self, all_results, impact_analysis, dataset_info):
+        print("Benchmark Results:")
+        for model_name, model_results in all_results.items():
+            print(f"\n{model_name}:")
+            for variant, metrics in model_results.items():
+                print(f"  {variant}:")
+                for metric, value in metrics["avg_metrics"].items():
+                    print(f"    {metric}: {value:.4f} ± {metrics['std_metrics'][metric]:.4f}")
+        
+        print("\nDataset Impact Analysis:")
+        print(f"Average Image Size: {dataset_info['avg_image_size']}")
+        print(f"Average Object Density: {dataset_info['avg_object_density']:.6f}")
+        
+        for model_name, analysis in impact_analysis.items():
+            print(f"\n{model_name}:")
+            print(f"  Performance vs Image Size Correlation: {analysis['performance_vs_image_size']:.4f}")
+            print(f"  Performance vs Object Density Correlation: {analysis['performance_vs_object_density']:.4f}")
+        
+        print("\nLimitations and Considerations:")
+        print("- Models were trained on different datasets with potentially different class labels.")
+        print("- The evaluation uses bounding box metrics that don't rely on specific class names.")
+        print("- Performance may vary based on dataset characteristics and the specific use case.")
+        print("- Multiple runs were performed to account for variability, but results may still be affected by randomness.")
+        print("- The test dataset may not be representative of all possible real-world scenarios.")
 
     def visualize_comparison(
         self, image, od_outputs, depth_outputs=None, ground_truth=None
@@ -457,26 +482,4 @@ class ModelBenchmark:
         ax.set_xticklabels(labels, rotation=45, ha="right")
         ax.set_title(title)
 
-    def run_benchmark(self, image_paths, ground_truth):
-        all_results = {"object_detection": {}, "depth_estimation": {}}
 
-        for model_type in ["object_detection", "depth_estimation"]:
-            models = (
-                self.config.OBJECT_DETECTION_MODELS
-                if model_type == "object_detection"
-                else self.config.DEPTH_ESTIMATION_MODELS
-            )
-
-            for model_name, variants in models.items():
-                model_results = {}
-                for variant in variants:
-                    print(f"Benchmarking {model_type} - {model_name} - {variant}")
-                    results = self.benchmark_model(
-                        model_type, model_name, variant, image_paths
-                    )
-                    metrics = self.calculate_metrics(results, ground_truth, model_type)
-                    model_results[variant] = metrics
-                all_results[model_type][model_name] = model_results
-
-        self.create_comparison_graphs(all_results)
-        return all_results

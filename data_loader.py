@@ -9,6 +9,7 @@ import json
 class DataLoader:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.class_names = set()  # Set to hold unified class names
 
     def get_random_images(self, dataset_name, num_images):
         dataset_dir = os.path.join(Config.DATASET_DIR, dataset_name)
@@ -32,8 +33,10 @@ class DataLoader:
         
         unified_annotations = []
         for ann in annotations:
+            category_name = next(cat['name'] for cat in coco_data['categories'] if cat['id'] == ann['category_id'])
+            self.class_names.add(category_name.lower())  # Add lowercased class name
             unified_annotations.append({
-                'category': next(cat['name'] for cat in coco_data['categories'] if cat['id'] == ann['category_id']),
+                'category': category_name.lower(),
                 'bbox': ann['bbox'],  # [x, y, width, height]
             })
         
@@ -47,19 +50,15 @@ class DataLoader:
             return []  # Return empty if not found
         
         try:
-            with open(ann_file, 'r') as f:
-                content = f.read().strip()
-            if not content:
-                print(f'Empty annotation file: {ann_file}')
-                return []
-            
-            tree = ET.fromstring(content)
+            tree = ET.parse(ann_file)
             unified_annotations = []
             for obj in tree.findall('object'):
+                class_name = obj.find('name').text.lower()
+                self.class_names.add(class_name)  # Add lowercased class name
                 bbox = obj.find('bndbox')
                 if bbox is not None:
                     unified_annotations.append({
-                        'category': obj.find('name').text if obj.find('name') is not None else 'unknown',
+                        'category': class_name,
                         'bbox': [
                             float(bbox.find('xmin').text) if bbox.find('xmin') is not None else 0,
                             float(bbox.find('ymin').text) if bbox.find('ymin') is not None else 0,
@@ -70,8 +69,6 @@ class DataLoader:
             return unified_annotations
         except ET.ParseError as e:
             print(f'XML Parse Error: {e} for file: {ann_file}')
-            with open(ann_file, 'r') as f:
-                print(f'File content: {f.read()}')
             return []  # To handle parse errors
         except Exception as e:
             print(f'Unexpected error: {e} for file: {ann_file}')
@@ -105,8 +102,10 @@ class DataLoader:
                     if len(parts) < 15:  # KITTI format should have at least 15 values
                         print(f'Invalid KITTI annotation line: {line}')
                         continue
+                    class_name = parts[0].lower()
+                    self.class_names.add(class_name)  # Add lowercased class name
                     unified_annotations.append({
-                        'category': parts[0],
+                        'category': class_name,
                         'bbox': [float(parts[4]), float(parts[5]), float(parts[6]) - float(parts[4]), float(parts[7]) - float(parts[5])],
                     })
         except Exception as e:
@@ -143,3 +142,12 @@ class DataLoader:
                 benchmark_images.append({"image_path": image_path, "annotations": annotations})
         
         return benchmark_images[:Config.TOTAL_IMAGES]
+
+    def get_unique_class_names(self):
+        return sorted(self.class_names)  # Return sorted list of unique class names
+
+# dataloader = DataLoader()
+# benchmark_data = dataloader.load_benchmark_data()
+
+# unique_classes = dataloader.get_unique_class_names()  # Get unified class names
+# print("Unique class names:", unique_classes)  # Output the unique class names
