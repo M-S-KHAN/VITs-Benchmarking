@@ -5,8 +5,10 @@ class BoxConversionFactory:
     def get_converter(model_type):
         if model_type == "YOLOS":
             return BoxConversionFactory.convert_yolos_format
-        elif model_type == "DETR":
+        if model_type == "DETR":
             return BoxConversionFactory.convert_detr_format
+        elif model_type == "OWL-ViT":
+            return BoxConversionFactory.convert_owlvit_format
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
 
@@ -19,6 +21,17 @@ class BoxConversionFactory:
         y1 = (cy - 0.5 * h) * height
         x2 = (cx + 0.5 * w) * width
         y2 = (cy + 0.5 * h) * height
+        return torch.stack((x1, y1, x2, y2), dim=-1)
+
+    @staticmethod
+    def convert_owlvit_format(boxes, image_size):
+        """Convert normalized [x1, y1, x2, y2] to absolute [x1, y1, x2, y2]"""
+        height, width = image_size
+        x1, y1, x2, y2 = boxes.unbind(-1)
+        x1 = x1 * width
+        y1 = y1 * height
+        x2 = x2 * width
+        y2 = y2 * height
         return torch.stack((x1, y1, x2, y2), dim=-1)
 
     @staticmethod
