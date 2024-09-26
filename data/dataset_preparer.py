@@ -2,11 +2,11 @@ import os
 import random
 import xml.etree.ElementTree as ET
 import logging
-from config import Config
-from utils import download_file, extract_file
+from ds_config import Config
+from utils.utils import download_file, extract_file
 import json
 
-class DataLoader:
+class DatasetPreparer:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.class_names = set()  # Set to hold unified class names
@@ -145,9 +145,3 @@ class DataLoader:
 
     def get_unique_class_names(self):
         return sorted(self.class_names)  # Return sorted list of unique class names
-
-# dataloader = DataLoader()
-# benchmark_data = dataloader.load_benchmark_data()
-
-# unique_classes = dataloader.get_unique_class_names()  # Get unified class names
-# print("Unique class names:", unique_classes)  # Output the unique class names
