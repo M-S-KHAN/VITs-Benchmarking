@@ -404,9 +404,9 @@
 
 from data.data_loader import DataLoader
 from utils.utils import load_benchmark_data
-from benchmarking.benchmark import run_benchmark
+from benchmarking.detection_benchmark import run_benchmark
 from benchmarking.visualization import VisualizationUtils
-from config import MODELS_TO_BENCHMARK
+from config import DET_MODELS_TO_BENCHMARK
 import logging
 import json
 
@@ -422,7 +422,7 @@ def main():
         benchmark_data = data_loader.load_benchmark_data()
 
     all_results = []
-    for model_type, model_name in MODELS_TO_BENCHMARK:
+    for model_type, model_name in DET_MODELS_TO_BENCHMARK:
         print(f"Starting benchmark for {model_name}")
         try:
             print(f'{model_type} {model_name}')

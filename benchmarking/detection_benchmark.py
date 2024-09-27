@@ -13,7 +13,7 @@ from benchmarking.box_conversion import BoxConversionFactory
 from utils.utils import logger
 from transformers import YolosForObjectDetection, YolosFeatureExtractor, DetrForObjectDetection, DetrFeatureExtractor, OwlViTForObjectDetection, OwlViTProcessor
 
-class Benchmark:
+class DetectionBenchmark:
     def __init__(self, model_type, model_name, device="cuda" if torch.cuda.is_available() else "cpu"):
         self.model_type = model_type
         self.model_name = model_name
@@ -165,7 +165,7 @@ class Benchmark:
 def run_benchmark(model_type, model_name, benchmark_data):
     logger.info(f"Starting benchmark for {model_name}")
     print(f"Starting benchmark for {model_name}")
-    benchmark = Benchmark(model_type, model_name)
+    benchmark = DetectionBenchmark(model_type, model_name)
     results = benchmark.benchmark(benchmark_data)
     
     avg_metrics = {
