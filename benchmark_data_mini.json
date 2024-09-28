@@ -1,0 +1,165 @@
+[
+  {
+    "image_path": "datasets/COCO/val2017/000000177934.jpg",
+    "annotations": [
+      { "category": "bottle", "bbox": [571.23, 283.43, 9.66, 24.6] },
+      { "category": "car", "bbox": [554.64, 167.69, 46.66, 39.39] },
+      { "category": "car", "bbox": [298.73, 170.1, 75.1, 60.19] },
+      { "category": "car", "bbox": [425.11, 163.46, 40.02, 40.31] },
+      { "category": "car", "bbox": [457.65, 157.53, 97.72, 73.98] },
+      { "category": "car", "bbox": [304.38, 166.37, 49.09, 30.18] },
+      { "category": "motorcycle", "bbox": [70.11, 196.31, 257.8, 170.43] },
+      { "category": "motorcycle", "bbox": [182.5, 185.44, 52.36, 90.04] },
+      { "category": "person", "bbox": [352.76, 154.48, 52.36, 184.02] },
+      { "category": "person", "bbox": [227.62, 164.6, 43.9, 113.04] },
+      { "category": "person", "bbox": [403.78, 148.13, 42.15, 140.21] },
+      { "category": "person", "bbox": [463.82, 151.01, 66.88, 127.28] },
+      { "category": "person", "bbox": [189.49, 144.59, 44.82, 75.76] },
+      { "categoryF": "truck", "bbox": [0.0, 102.31, 256.87, 128.44] },
+      { "category": "truck", "bbox": [256.65, 148.37, 72.36, 48.24] },
+      { "category": "person", "bbox": [392.0, 150.79, 18.89, 73.72] },
+      { "category": "car", "bbox": [544.32, 160.81, 41.99, 34.27] },
+      { "category": "truck", "bbox": [422.2, 153.28, 17.91, 12.48] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000166287.jpg",
+    "annotations": [
+      { "category": "bird", "bbox": [31.71, 180.34, 33.75, 27.53] },
+      { "category": "bird", "bbox": [28.68, 156.47, 30.3, 12.75] },
+      { "category": "bird", "bbox": [10.26, 107.34, 22.03, 13.31] },
+      { "category": "bird", "bbox": [91.12, 133.63, 32.03, 7.74] },
+      { "category": "bird", "bbox": [152.3, 146.77, 30.88, 10.51] },
+      { "category": "bird", "bbox": [250.24, 149.47, 34.95, 19.53] },
+      { "category": "bird", "bbox": [277.42, 32.94, 35.95, 33.57] },
+      { "category": "bird", "bbox": [393.75, 178.51, 33.86, 12.23] },
+      { "category": "bird", "bbox": [209.89, 154.64, 35.14, 13.05] },
+      { "category": "bird", "bbox": [587.13, 168.42, 45.11, 17.74] },
+      { "category": "bird", "bbox": [476.92, 118.39, 44.85, 8.22] },
+      { "category": "cow", "bbox": [150.71, 221.94, 90.84, 87.74] },
+      { "category": "cow", "bbox": [532.26, 211.91, 50.36, 94.95] },
+      { "category": "bird", "bbox": [596.28, 205.49, 25.57, 25.56] },
+      { "category": "bird", "bbox": [358.28, 172.1, 32.22, 8.6] },
+      { "category": "cow", "bbox": [221.83, 184.4, 139.27, 126.4] },
+      { "category": "bird", "bbox": [1, 52, 508, 264] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000090003.jpg",
+    "annotations": [
+      { "category": "dog", "bbox": [219.44, 213.85, 273.73, 151.93] },
+      { "category": "dog", "bbox": [144.48, 205.58, 185.22, 120.24] },
+      { "category": "frisbee", "bbox": [136.04, 248.34, 53.91, 26.95] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000239857.jpg",
+    "annotations": [
+      { "category": "person", "bbox": [293.16, 121.59, 69.91, 151.09] },
+      { "category": "person", "bbox": [28.22, 125.88, 27.94, 45.62] },
+      { "category": "frisbee", "bbox": [275.42, 141.61, 27.12, 16.95] },
+      { "category": "chair", "bbox": [168.43, 175.52, 25.48, 35.48] },
+      { "category": "chair", "bbox": [194.31, 175.02, 26.81, 35.38] },
+      { "category": "chair", "bbox": [222.36, 175.47, 29.4, 33.2] },
+      { "category": "chair", "bbox": [133.44, 175.35, 28.57, 34.96] },
+      { "category": "chair", "bbox": [108.04, 174.67, 28.69, 37.51] },
+      { "category": "chair", "bbox": [53.49, 175.12, 29.02, 35.26] },
+      { "category": "chair", "bbox": [164.47, 166.11, 23.21, 37.61] },
+      { "category": "chair", "bbox": [248.27, 171.38, 17.26, 36.8] },
+      { "category": "chair", "bbox": [194.26, 167.75, 21.47, 6.1] },
+      { "category": "chair", "bbox": [81.28, 174.61, 26.39, 37.36] },
+      { "category": "chair", "bbox": [28.9, 169.25, 25.94, 42.8] },
+      { "category": "chair", "bbox": [227.21, 169.18, 22.35, 9.68] },
+      { "category": "dining table", "bbox": [94.92, 171.5, 136.25, 5.34] },
+      { "category": "person", "bbox": [8.12, 127.65, 36.98, 96.05] },
+      { "category": "person", "bbox": [69.63, 134.67, 27.66, 40.18] },
+      { "category": "chair", "bbox": [134.3, 169.76, 19.4, 3.8] },
+      { "category": "chair", "bbox": [105, 170, 23, 9] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000448448.jpg",
+    "annotations": [
+      { "category": "giraffe", "bbox": [136.22, 78.38, 503.78, 401.62] },
+      { "category": "giraffe", "bbox": [111.1, 2.16, 480.0, 247.01] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000028993.jpg",
+    "annotations": [
+      { "category": "fire hydrant", "bbox": [288.89, 220.56, 161.55, 383.36] },
+      { "category": "fire hydrant", "bbox": [152.29, 240.08, 95.22, 241.48] },
+      { "category": "traffic light", "bbox": [95.04, 225.06, 7.28, 8.61] },
+      { "category": "traffic light", "bbox": [92.26, 243.03, 5.31, 5.69] },
+      { "category": "traffic light", "bbox": [54.67, 239.73, 6.89, 7.22] },
+      { "category": "person", "bbox": [146.21, 243.66, 10.1, 28.22] },
+      { "category": "person", "bbox": [62.43, 245.58, 10.76, 28.0] },
+      { "category": "person", "bbox": [92.12, 250.47, 7.68, 21.88] },
+      { "category": "person", "bbox": [98.97, 248.26, 8.74, 23.86] },
+      { "category": "person", "bbox": [114.45, 247.4, 7.32, 24.75] },
+      { "category": "person", "bbox": [134.2, 244.98, 11.49, 27.13] },
+      { "category": "person", "bbox": [29.35, 239.8, 13.73, 36.78] },
+      { "category": "person", "bbox": [54.26, 253.06, 8.23, 18.69] },
+      { "category": "person", "bbox": [125.29, 247.8, 7.18, 24.24] },
+      { "category": "fire hydrant", "bbox": [238.08, 237.76, 92.49, 299.27] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000498857.jpg",
+    "annotations": [{ "category": "giraffe", "bbox": [159.37, 87.93, 170.31, 231.84] }]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000009914.jpg",
+    "annotations": [
+      { "category": "bowl", "bbox": [2.16, 154.25, 197.39, 203.86] },
+      { "category": "bowl", "bbox": [132.51, 0.83, 124.54, 61.2] },
+      { "category": "knife", "bbox": [434.8, 300.22, 157.36, 179.78] },
+      { "category": "sandwich", "bbox": [153.17, 188.76, 338.89, 291.24] },
+      { "category": "sandwich", "bbox": [528.54, 162.95, 108.94, 308.49] },
+      { "category": "dining table", "bbox": [431.46, 0.0, 208.54, 199.55] },
+      { "category": "hot dog", "bbox": [518.75, 185.63, 121.25, 278.75] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000467176.jpg",
+    "annotations": [
+      { "category": "tv", "bbox": [349.31, 101.34, 137.23, 111.32] },
+      { "category": "person", "bbox": [268.7, 221.29, 138.19, 202.49] },
+      { "category": "person", "bbox": [468.01, 251.71, 129.18, 176.29] },
+      { "category": "person", "bbox": [17.11, 190.52, 168.74, 237.48] },
+      { "category": "person", "bbox": [58.37, 157.41, 111.31, 247.98] },
+      { "category": "person", "bbox": [17.64, 218.13, 34.85, 70.1] },
+      { "category": "remote", "bbox": [158.02, 213.94, 9.62, 19.23] },
+      { "category": "remote", "bbox": [223.83, 233.02, 21.52, 7.7] },
+      { "category": "chair", "bbox": [0.0, 229.22, 37.47, 88.01] },
+      { "category": "remote", "bbox": [28.37, 283.57, 10.63, 12.41] },
+      { "category": "book", "bbox": [233.34, 154.75, 14.68, 29.36] },
+      { "category": "person", "bbox": [378.71, 158.02, 10.83, 14.4] },
+      { "category": "couch", "bbox": [566.75, 290.83, 73.25, 136.42] },
+      { "category": "remote", "bbox": [503.62, 243.58, 14.9, 12.41] },
+      { "category": "remote", "bbox": [514.99, 269.36, 17.03, 11.43] },
+      { "category": "remote", "bbox": [209.46, 228.51, 14.78, 11.91] },
+      { "category": "book", "bbox": [225.71, 197.23, 24.73, 13.03] },
+      { "category": "book", "bbox": [233.26, 222.77, 23.49, 9.82] },
+      { "category": "book", "bbox": [207.34, 188.22, 27.54, 20.03] },
+      { "category": "book", "bbox": [239.79, 118.97, 5.46, 12.96] },
+      { "category": "book", "bbox": [236.52, 87.31, 6.54, 21.7] },
+      { "category": "book", "bbox": [221.72, 89.32, 3.99, 20.74] },
+      { "category": "book", "bbox": [211.74, 90.92, 8.02, 19.66] },
+      { "category": "book", "bbox": [247.74, 85.47, 5.74, 24.44] },
+      { "category": "book", "bbox": [252.66, 85.98, 3.43, 22.82] },
+      { "category": "book", "bbox": [241.08, 87.52, 7.83, 20.94] },
+      { "category": "book", "bbox": [223.55, 89.22, 5.12, 19.63] },
+      { "category": "cup", "bbox": [173.39, 210.77, 10.17, 16.58] },
+      { "category": "book", "bbox": [150.15, 97.41, 7.57, 11.16] },
+      { "category": "book", "bbox": [132, 81, 143, 123] }
+    ]
+  },
+  {
+    "image_path": "datasets/COCO/val2017/000000396580.jpg",
+    "annotations": [
+      { "category": "boat", "bbox": [371.88, 181.76, 113.73, 19.32] },
+      { "category": "bench", "bbox": [553.7, 160.06, 49.4, 16.81] }
+    ]
+  }
+]

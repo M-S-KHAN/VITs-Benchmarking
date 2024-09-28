@@ -49,7 +49,7 @@ def main():
     logger.info("Detailed results saved to depth_estimation_benchmark_results.json")
 
     # Create visualization graphs
-    VisualizationUtils.create_comparison_graphs(all_results)
+    VisualizationUtils.create_comparison_graphs(all_results, task_type="depth")
 
 
 if __name__ == "__main__":

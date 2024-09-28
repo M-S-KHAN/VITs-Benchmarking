@@ -65,7 +65,8 @@ class DepthBenchmark:
 
     def calculate_metrics(self, depth_map, bboxes, rgb_image):
         obj_size_consistency = self.object_size_consistency(depth_map, bboxes)
-        depth_consistency = np.std(depth_map)
+        normalized_depth_map = (depth_map - np.min(depth_map)) / (np.max(depth_map) - np.min(depth_map))
+        depth_consistency = np.std(normalized_depth_map)
         edge_comparison = self.edge_detection_comparison(rgb_image, depth_map)
         return {
             "obj_size_consistency": obj_size_consistency,
@@ -80,7 +81,8 @@ class DepthBenchmark:
             x2, y2 = x1 + w, y1 + h
             obj_depth = depth_map[int(y1) : int(y2), int(x1) : int(x2)].mean()
             obj_size = w * h
-            consistencies.append((obj_depth, obj_size))
+            if obj_depth > 0:  # Avoid division by zero
+                consistencies.append((obj_depth, obj_size))
         if len(consistencies) > 1:
             depths, sizes = zip(*consistencies)
             depth_size_ratio = np.array(sizes) / np.array(depths)
@@ -127,25 +129,55 @@ class DepthBenchmark:
 def run_benchmark(model_type, model_name, benchmark_data):
     logger.info(f"Starting benchmark for {model_name}")
     print(f"Starting benchmark for {model_name}")
-    benchmark = DepthBenchmark(model_type, model_name)
-    results = benchmark.benchmark(benchmark_data)
-    avg_metrics = {
-        "obj_size_consistency": sum(
-            r["metrics"]["obj_size_consistency"] for r in results
-        )
-        / len(results),
-        "depth_consistency": sum(r["metrics"]["depth_consistency"] for r in results)
-        / len(results),
-        "edge_comparison": sum(r["metrics"]["edge_comparison"] for r in results)
-        / len(results),
-        "avg_inference_time": sum(r["metrics"]["inference_time"] for r in results)
-        / len(results),
-    }
-    logger.info(f"Average Metrics for {model_name}:")
-    for metric, value in avg_metrics.items():
-        logger.info(f"{metric}: {value:.4f}")
-    return {
-        "model_name": model_name,
-        "avg_metrics": avg_metrics,
-        "detailed_results": results,
-    }
+    try:
+        benchmark = DepthBenchmark(model_type, model_name)
+        results = benchmark.benchmark(benchmark_data)
+        
+        # Extract only the metrics and image paths
+        simplified_results = []
+        for result in results:
+            simplified_result = {
+                "image_path": result["image_path"],
+                "metrics": {}
+            }
+            for key, value in result["metrics"].items():
+                if isinstance(value, np.number):
+                    simplified_result["metrics"][key] = float(value)
+                else:
+                    simplified_result["metrics"][key] = value
+            simplified_results.append(simplified_result)
+
+        avg_metrics = {
+            "obj_size_consistency": float(np.mean([r["metrics"]["obj_size_consistency"] for r in simplified_results])),
+            "depth_consistency": float(np.mean([r["metrics"]["depth_consistency"] for r in simplified_results])),
+            "edge_comparison": float(np.mean([r["metrics"]["edge_comparison"] for r in simplified_results])),
+            "avg_inference_time": float(np.mean([r["metrics"]["inference_time"] for r in simplified_results])),
+        }
+        
+        logger.info(f"Average Metrics for {model_name}:")
+        for metric, value in avg_metrics.items():
+            logger.info(f"{metric}: {value:.4f}")
+        
+        return {
+            "model_name": model_name,
+            "avg_metrics": avg_metrics,
+            "detailed_results": simplified_results,
+            "model_info": {
+                "type": model_type,
+                "name": model_name,
+                "parameters": benchmark.model.num_parameters()
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error running benchmark for {model_name}: {str(e)}")
+        return {
+            "model_name": model_name,
+            "error": str(e),
+            "avg_metrics": {},
+            "detailed_results": [],
+            "model_info": {
+                "type": model_type,
+                "name": model_name,
+                "parameters": None
+            }
+        }
